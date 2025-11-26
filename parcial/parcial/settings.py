@@ -1,5 +1,7 @@
+import os 
 from decouple import config
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,8 +13,11 @@ SECRET_KEY = 'django-insecure-&wf0p4kl&ylylj@-9(hgau^^(vbo8-^sxr5v4iwnuke8lpy!_m
 DEBUG = config("DEBUG", default=True, cast=bool)
 RENDER = config("RENDER", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+if RENDER:
+    DEBUG = False
 
+ALLOWED_HOSTS = ["*"]
+LOGIN_REDIRECT_URL = '/alumnos/'
 
 
 #configuración envio de correos electronicos
@@ -20,19 +25,19 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'nahuelquintana97@gmail.com'
-EMAIL_HOST_PASSWORD = 'lzwtuiffcebtilxg'  #mover la clave a variables de Render.
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 
-
-
-LOGIN_REDIRECT_URL = '/alumnos/'
 #Render deploy
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATICFILES_DIRS = [BASE_DIR / 'static']
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Application definition
 
@@ -55,6 +60,7 @@ INSTALLED_APPS = BASICS + PROPIAS + TERCEROS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -85,13 +91,17 @@ WSGI_APPLICATION = 'parcial.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if RENDER:
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -124,8 +134,4 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
-
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,1 +1,1 @@
-web: gunicorn parcialProgramacion2.wsgi:application
+web: gunicorn parcial.wsgi:application

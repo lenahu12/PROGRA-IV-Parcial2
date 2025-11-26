@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h2>Bienvenido al listado de alumnos</h2>
+    <p class="lead">Elegí una funcionalidad para comenzar:</p>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg me-3">Ir al Dashboard</a>
+    <a href="{% url 'scraper' %}" class="btn btn-success btn-lg">Ir al Scraper</a>
+</div>
+{% endblock %}

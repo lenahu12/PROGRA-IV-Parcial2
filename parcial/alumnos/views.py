@@ -1,13 +1,14 @@
 from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .models import Alumno
 from .utils import generar_pdf_alumno
 from .forms import AlumnoForm
-
+from django.conf import settings
 #vista basada en clase, en vez de usar login_required uso LoginReqruiedMixin
 class DashboardView(LoginRequiredMixin, ListView):
     model = Alumno
@@ -28,21 +29,23 @@ class AlumnoCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
     
 #vista basada en función para usar @login_required como solicita la consigna.
-
 @login_required
 def enviar_pdf(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk, usuario=request.user)
     pdf_buffer = generar_pdf_alumno(alumno)
     destinatarios = [request.user.email, alumno.email]
-
-    email = EmailMessage(
-        subject=f"Ficha del alumno {alumno.nombre}",
-        body="Adjunto encontrarás el PDF con los datos del alumno.",
-        from_email=None, 
-        to=destinatarios,  
-    )
-    email.attach(f"alumno_{alumno.pk}.pdf", pdf_buffer.read(), "application/pdf")
-    email.send()
+    try:
+        email = EmailMessage(
+            subject=f"Ficha del alumno {alumno.nombre}",
+            body="Adjunto encontrarás el PDF con los datos del alumno.",
+            from_email=settings.DEFAULT_FROM_EMAIL, 
+            to=destinatarios,  
+        )
+        email.attach(f"alumno_{alumno.pk}.pdf", pdf_buffer.read(), "application/pdf")
+        email.send(fail_silently=False)
+    except Exception as e:
+        messages.warning(request, "No se puedo enviar el PDF por correo.")
+        print(f"Error al enviar PDF: {e}")
 
     print(f"PDF enviado a: {', '.join(destinatarios)}")
     return redirect('dashboard')

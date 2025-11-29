@@ -1,7 +1,7 @@
 import requests
 from django.core.mail import EmailMessage
 from bs4 import BeautifulSoup
-
+from django.conf import settings
 def hacer_scraping(keyword):
     url = f"https://es.wikipedia.org/wiki/{keyword}"
     headers = {
@@ -25,10 +25,14 @@ def enviar_resultados_por_mail(resultados, destinatario):
     for r in resultados:
         cuerpo += f"{r['id']}. {r['contenido']}\n\n"
 
-    email = EmailMessage(
-        subject="Resultados del scraping educativo",
-        body=cuerpo,
-        from_email=None, 
-        to=[destinatario],
-    )
-    email.send()
+    try:
+        email = EmailMessage(
+            subject="Resultados del scraping educativo",
+            body=cuerpo,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[destinatario],
+            
+        )
+        email.send(fail_silently=False)
+    except Exception as e:
+        print(f"Error al enviar resultados por correo: {e}")

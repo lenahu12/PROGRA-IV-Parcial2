@@ -5,6 +5,7 @@ from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.core.mail import send_mail
 from .forms import SignUpForm
+from django.conf import settings
 
 class SignUpView(FormView):
     template_name = 'accounts/signup.html'
@@ -20,7 +21,7 @@ class SignUpView(FormView):
             sent = send_mail(
                 subject='Bienvenido a la plataforma',
                 message=f'Gracias por registrarte, {user.username}.',
-                from_email=None,
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,
             )

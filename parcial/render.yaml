@@ -3,4 +3,4 @@ services:
     name: parcial-django
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn parcialProgramacion2.wsgi:application
+    startCommand: gunicorn parcial.wsgi:application
